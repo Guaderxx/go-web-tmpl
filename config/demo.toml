@@ -1,0 +1,8 @@
+env = "dev"
+app_name = "go-web-template"
+
+[log]
+formatter = "json"
+level = "debug"
+add_source = true
+
