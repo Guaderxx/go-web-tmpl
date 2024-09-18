@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var _ ALogger = (*alog)(nil)
+
 var Log ALogger
 
 func init() {
