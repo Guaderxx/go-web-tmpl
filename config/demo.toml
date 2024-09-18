@@ -12,3 +12,11 @@ read_timeout = 10
 write_timeout = 10
 idle_timeout = 0
 max_header_mb = 1
+
+[db]
+name = "postgres"
+host = "localhost"
+port = 5432
+user = "ader"
+schema = "postgres"
+password = "aderpassword"
