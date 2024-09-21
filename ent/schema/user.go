@@ -1,6 +1,10 @@
 package schema
 
-import "entgo.io/ent"
+import (
+	"entgo.io/ent"
+	"entgo.io/ent/schema/field"
+	"github.com/Guaderxx/gowebtmpl/ent/schema/mixin"
+)
 
 // User holds the schema definition for the User entity.
 type User struct {
@@ -9,10 +13,26 @@ type User struct {
 
 // Fields of the User.
 func (User) Fields() []ent.Field {
-	return nil
+	return []ent.Field{
+		field.String("name").
+			MinLen(3).
+			MaxLen(255),
+		field.String("password").
+			Sensitive(),
+		field.String("email").
+			Unique(),
+	}
 }
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return nil
+}
+
+func (User) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		mixin.IDMixin{},
+		mixin.TimeMixin{},
+		mixin.SoftDeleteMixin{},
+	}
 }
