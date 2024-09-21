@@ -4,7 +4,7 @@ app_name = "go-web-template"
 [log]
 formatter = "json"
 level = "debug"
-add_source = true
+add_source = false
 
 [web]
 port = "8080"
@@ -20,3 +20,9 @@ port = 5432
 user = "ader"
 schema = "postgres"
 password = "aderpassword"
+
+[jwt]
+access_token_secret = "access_token_secret"
+access_token_expiry_hour = 2
+refresh_token_secret = "refresh_token_secret"
+refresh_token_expiry_hour = 144
