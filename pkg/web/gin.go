@@ -6,14 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Options struct {
-	Port         string
-	ReadTimeout  int `mapstructure:"read_timeout"`
-	WriteTimeout int `mapstructure:"write_timeout"`
-	IdleTimeout  int `mapstructure:"idle_timeout"`
-	MaxHeaderMB  int `mapstructure:"max_header_mb"`
-}
-
 func New(logger alog.ALogger) *gin.Engine {
 	router := gin.New()
 
