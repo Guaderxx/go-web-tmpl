@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/Guaderxx/gowebtmpl/pkg/alog"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +14,6 @@ var versionCmd = &cobra.Command{
 	Short: "0.1.0",
 	Long:  `All software has versions. This is Tmpl's`,
 	Run: func(cmd *cobra.Command, args []string) {
-		logger.Info("Tmpl v0.1.0")
+		alog.Info("Tmpl v0.1.0")
 	},
 }
