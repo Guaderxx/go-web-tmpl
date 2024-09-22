@@ -29,19 +29,19 @@ func JwtAuth(secret string) gin.HandlerFunc {
 		if len(t) == 2 {
 			authToken := t[1]
 			if _, err := IsAuthorized(authToken, secret); err != nil {
-				alog.Fatal("authorized failed", "error", err.Error())
+				alog.Warn("authorized failed", "error", err.Error())
 				c.AbortWithStatusJSON(http.StatusOK, gin.H{
 					"code":  401,
-					"error": "unauthorized",
+					"error": err.Error(),
 				})
 				return
 			}
 			userID, err := ExtractIDFromToken(authToken, secret)
 			if err != nil {
-				alog.Fatal("extract id failed", "error", err.Error())
+				alog.Warn("extract id failed", "error", err.Error())
 				c.AbortWithStatusJSON(http.StatusOK, gin.H{
 					"code":  401,
-					"error": "unauthorized",
+					"error": err.Error(),
 				})
 				return
 			}
@@ -97,7 +97,7 @@ func IsAuthorized(requestToken, secret string) (bool, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
-		alog.Error("authorized failed", "token", requestToken, "secret", secret, "error", err.Error())
+		alog.Warn("authorized failed", "token", requestToken, "secret", secret, "error", err.Error())
 		return false, err
 	}
 	return true, nil
