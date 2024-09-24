@@ -1,13 +1,13 @@
 package routers
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/Guaderxx/gowebtmpl/ent"
 	"github.com/Guaderxx/gowebtmpl/pkg/core"
 	"github.com/Guaderxx/gowebtmpl/pkg/domain/service"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -24,54 +24,10 @@ func (uc *User) Signup(c *gin.Context) {
 		})
 		return
 	}
-	_, err := uc.Usecase.GetUserByEmail(c, req.Email)
-	if err == nil {
-		c.JSON(http.StatusOK, service.Response[string]{
-			Code: 200,
-			Data: "user already exists.",
-		})
-		return
-	}
 
-	encryptedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(req.Password),
-		bcrypt.DefaultCost,
-	)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
+	ctx := context.WithValue(c, "c-jwt", uc.Core.Config.JWT)
 
-	req.Password = string(encryptedPassword)
-	user, err := uc.Usecase.Create(c, req.Name, req.Password, req.Email)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
-
-	accessToken, err := uc.Usecase.CreateAccessToken(
-		user,
-		uc.Core.Config.JWT.AccessTokenSecret,
-		uc.Core.Config.JWT.AccessTokenExpiryHour,
-	)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
-	refreshToken, err := uc.Usecase.CreateRefreshToken(
-		user,
-		uc.Core.Config.JWT.RefreshTokenSecret,
-		uc.Core.Config.JWT.RefreshTokenExpiryHour,
-	)
+	res, err := uc.Usecase.Signup(ctx, &req)
 	if err != nil {
 		c.JSON(http.StatusOK, service.ErrorResponse{
 			Code:  500,
@@ -82,12 +38,8 @@ func (uc *User) Signup(c *gin.Context) {
 
 	c.JSON(http.StatusOK, service.Response[service.SignupResponse]{
 		Code: 200,
-		Data: service.SignupResponse{
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
-		},
+		Data: *res,
 	})
-
 }
 
 func (uc *User) Login(c *gin.Context) {
@@ -99,40 +51,10 @@ func (uc *User) Login(c *gin.Context) {
 		})
 		return
 	}
-	user, err := uc.Usecase.GetUserByEmail(c, req.Email)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
-	// validate password
-	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)) != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  401,
-			Error: "invalid credentials.",
-		})
-		return
-	}
 
-	accessToken, err := uc.Usecase.CreateAccessToken(
-		user,
-		uc.Core.Config.JWT.AccessTokenSecret,
-		uc.Core.Config.JWT.AccessTokenExpiryHour,
-	)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
-	refreshToken, err := uc.Usecase.CreateRefreshToken(
-		user,
-		uc.Core.Config.JWT.RefreshTokenSecret,
-		uc.Core.Config.JWT.RefreshTokenExpiryHour,
-	)
+	ctx := context.WithValue(c, "c-jwt", uc.Core.Config.JWT)
+
+	res, err := uc.Usecase.Login(ctx, &req)
 	if err != nil {
 		c.JSON(http.StatusOK, service.ErrorResponse{
 			Code:  500,
@@ -143,10 +65,7 @@ func (uc *User) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, service.Response[service.LoginResponse]{
 		Code: 200,
-		Data: service.LoginResponse{
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
-		},
+		Data: *res,
 	})
 }
 
@@ -160,52 +79,19 @@ func (uc *User) RefreshToken(c *gin.Context) {
 		return
 	}
 
-	id, err := uc.Usecase.ExtractIDFromToken(req.RefreshToken, uc.Core.Config.JWT.RefreshTokenSecret)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  401,
-			Error: "user not found",
-		})
-		return
-	}
-	user, err := uc.Usecase.GetUserByID(c, id)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  401,
-			Error: "user not found",
-		})
-		return
-	}
-	accessToken, err := uc.Usecase.CreateAccessToken(
-		user,
-		uc.Core.Config.JWT.AccessTokenSecret,
-		uc.Core.Config.JWT.AccessTokenExpiryHour,
-	)
+	ctx := context.WithValue(c, "c-jwt", uc.Core.Config.JWT)
+
+	res, err := uc.Usecase.RefreshToken(ctx, &req)
 	if err != nil {
 		c.JSON(http.StatusOK, service.ErrorResponse{
 			Code:  500,
 			Error: err.Error(),
 		})
-		return
 	}
-	refreshToken, err := uc.Usecase.CreateRefreshToken(
-		user,
-		uc.Core.Config.JWT.RefreshTokenSecret,
-		uc.Core.Config.JWT.RefreshTokenExpiryHour,
-	)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
+
 	c.JSON(http.StatusOK, service.Response[service.RefreshTokenResponse]{
 		Code: 200,
-		Data: service.RefreshTokenResponse{
-			AccessToken:  accessToken,
-			RefreshToken: refreshToken,
-		},
+		Data: *res,
 	})
 }
 
@@ -214,7 +100,7 @@ func (uc *User) Users(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, service.ErrorResponse{
 			Code:  500,
-			Error: "get users failed",
+			Error: err.Error(),
 		})
 		return
 	}
@@ -246,21 +132,11 @@ func (uc *User) UpdateUserName(c *gin.Context) {
 		return
 	}
 
-	accessToken, err := uc.Usecase.CreateAccessToken(
+	accessToken, refreshToken, err := uc.Usecase.CreateToken(
 		user,
 		uc.Core.Config.JWT.AccessTokenSecret,
-		uc.Core.Config.JWT.AccessTokenExpiryHour,
-	)
-	if err != nil {
-		c.JSON(http.StatusOK, service.ErrorResponse{
-			Code:  500,
-			Error: err.Error(),
-		})
-		return
-	}
-	refreshToken, err := uc.Usecase.CreateRefreshToken(
-		user,
 		uc.Core.Config.JWT.RefreshTokenSecret,
+		uc.Core.Config.JWT.AccessTokenExpiryHour,
 		uc.Core.Config.JWT.RefreshTokenExpiryHour,
 	)
 	if err != nil {

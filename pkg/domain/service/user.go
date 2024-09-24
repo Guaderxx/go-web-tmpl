@@ -7,16 +7,14 @@ import (
 )
 
 type User interface {
-	Create(c context.Context, name, pwd, email string) (*ent.User, error)
-	GetUserByID(c context.Context, id uint64) (*ent.User, error)
-	GetUserByEmail(c context.Context, email string) (*ent.User, error)
-	CreateAccessToken(user *ent.User, secret string, expiry int) (accessToken string, err error)
-	CreateRefreshToken(user *ent.User, secret string, expiry int) (refreshToken string, err error)
-	ExtractIDFromToken(requestToken string, secret string) (uint64, error)
-
 	Users(c context.Context) (ent.Users, error)
 	UpdateNameByID(c context.Context, id uint64, newName string) (*ent.User, error)
 	DeleteByID(c context.Context, id uint64) error
+
+	Signup(c context.Context, req *SignupRequest) (*SignupResponse, error)
+	Login(c context.Context, req *LoginRequest) (*LoginResponse, error)
+	CreateToken(user *ent.User, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (accessToken, refreshToken string, err error)
+	RefreshToken(c context.Context, req *RefreshTokenRequest) (*RefreshTokenResponse, error)
 }
 
 type SignupRequest struct {
