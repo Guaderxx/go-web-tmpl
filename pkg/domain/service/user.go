@@ -15,6 +15,8 @@ type User interface {
 	Login(c context.Context, req *LoginRequest) (*LoginResponse, error)
 	CreateToken(user *ent.User, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (accessToken, refreshToken string, err error)
 	RefreshToken(c context.Context, req *RefreshTokenRequest) (*RefreshTokenResponse, error)
+
+	UserTasks(c context.Context, uid uint64) (ent.Tasks, error)
 }
 
 type SignupRequest struct {
@@ -39,7 +41,7 @@ type LoginResponse struct {
 }
 
 type RefreshTokenRequest struct {
-	RefreshToken string `binding:"required,jwt"`
+	RefreshToken string `json:"refresh_token" binding:"required,jwt"`
 }
 
 type RefreshTokenResponse struct {

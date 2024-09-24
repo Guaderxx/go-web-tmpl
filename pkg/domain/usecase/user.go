@@ -106,7 +106,7 @@ func (uu *user) Login(c context.Context, req *service.LoginRequest) (*service.Lo
 }
 
 func (uu *user) CreateToken(user *ent.User, accessSecret, refreshSecret string, accessExpiry, refreshExpiry int) (accessToken, refreshToken string, err error) {
-	accessToken, err = middleware.CreateAccessToken(user.ID, user.Name, accessSecret, accessExpiry)
+	accessToken, err = middleware.CreateAccessToken(user.ID, accessSecret, accessExpiry)
 	if err != nil {
 		return "", "", err
 	}
@@ -123,7 +123,6 @@ func (uu *user) RefreshToken(c context.Context, req *service.RefreshTokenRequest
 		return nil, errors.New("get token failed")
 	}
 
-	// Don't get from "x-user-id", validate this token
 	id, err := middleware.ExtractIDFromToken(req.RefreshToken, jwtC.RefreshTokenSecret)
 	if err != nil {
 		return nil, err
@@ -132,6 +131,7 @@ func (uu *user) RefreshToken(c context.Context, req *service.RefreshTokenRequest
 	if err != nil {
 		return nil, err
 	}
+
 	accessToken, refreshToken, err := uu.CreateToken(
 		user,
 		jwtC.AccessTokenSecret,
@@ -146,4 +146,8 @@ func (uu *user) RefreshToken(c context.Context, req *service.RefreshTokenRequest
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+func (uu *user) UserTasks(c context.Context, uid uint64) (ent.Tasks, error) {
+	return uu.userRepo.UserTasks(c, uid)
 }
