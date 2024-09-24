@@ -75,3 +75,9 @@ func (ur *userRepo) DeleteByID(ctx context.Context, id uint64) error {
 		DeleteOneID(id).
 		Exec(ctx)
 }
+
+func (ur *userRepo) UserTasks(ctx context.Context, uid uint64) (ent.Tasks, error) {
+	return ur.core.DB.User.Query().
+		QueryTasks().
+		All(ctx)
+}
