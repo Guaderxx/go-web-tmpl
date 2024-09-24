@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Guaderxx/gowebtmpl/ent/schema"
+	"github.com/Guaderxx/gowebtmpl/ent/task"
 	"github.com/Guaderxx/gowebtmpl/ent/user"
 )
 
@@ -13,6 +14,35 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	taskMixin := schema.Task{}.Mixin()
+	taskMixinHooks0 := taskMixin[0].Hooks()
+	taskMixinHooks2 := taskMixin[2].Hooks()
+	task.Hooks[0] = taskMixinHooks0[0]
+	task.Hooks[1] = taskMixinHooks2[0]
+	taskMixinInters2 := taskMixin[2].Interceptors()
+	task.Interceptors[0] = taskMixinInters2[0]
+	taskMixinFields1 := taskMixin[1].Fields()
+	_ = taskMixinFields1
+	taskFields := schema.Task{}.Fields()
+	_ = taskFields
+	// taskDescCreatedAt is the schema descriptor for created_at field.
+	taskDescCreatedAt := taskMixinFields1[0].Descriptor()
+	// task.DefaultCreatedAt holds the default value on creation for the created_at field.
+	task.DefaultCreatedAt = taskDescCreatedAt.Default.(func() time.Time)
+	// taskDescUpdatedAt is the schema descriptor for updated_at field.
+	taskDescUpdatedAt := taskMixinFields1[1].Descriptor()
+	// task.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	task.DefaultUpdatedAt = taskDescUpdatedAt.Default.(func() time.Time)
+	// task.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	task.UpdateDefaultUpdatedAt = taskDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// taskDescTitle is the schema descriptor for title field.
+	taskDescTitle := taskFields[0].Descriptor()
+	// task.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	task.TitleValidator = taskDescTitle.Validators[0].(func(string) error)
+	// taskDescPriority is the schema descriptor for priority field.
+	taskDescPriority := taskFields[2].Descriptor()
+	// task.DefaultPriority holds the default value on creation for the priority field.
+	task.DefaultPriority = taskDescPriority.Default.(int)
 	userMixin := schema.User{}.Mixin()
 	userMixinHooks0 := userMixin[0].Hooks()
 	userMixinHooks2 := userMixin[2].Hooks()

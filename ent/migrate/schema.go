@@ -8,6 +8,31 @@ import (
 )
 
 var (
+	// TasksColumns holds the columns for the "tasks" table.
+	TasksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUint64, Increment: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "title", Type: field.TypeString, Size: 255},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"IN_PROGRESS", "COMPLETED"}, Default: "IN_PROGRESS"},
+		{Name: "priority", Type: field.TypeInt, Default: 0},
+		{Name: "user_tasks", Type: field.TypeUint64, Nullable: true},
+	}
+	// TasksTable holds the schema information for the "tasks" table.
+	TasksTable = &schema.Table{
+		Name:       "tasks",
+		Columns:    TasksColumns,
+		PrimaryKey: []*schema.Column{TasksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tasks_users_tasks",
+				Columns:    []*schema.Column{TasksColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUint64, Increment: true},
@@ -26,9 +51,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		TasksTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	TasksTable.ForeignKeys[0].RefTable = UsersTable
 }

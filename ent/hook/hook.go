@@ -9,6 +9,18 @@ import (
 	"github.com/Guaderxx/gowebtmpl/ent"
 )
 
+// The TaskFunc type is an adapter to allow the use of ordinary
+// function as Task mutator.
+type TaskFunc func(context.Context, *ent.TaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TaskMutation", m)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)
