@@ -14,4 +14,6 @@ func Route(r *gin.Engine, co *core.Core) {
 	protectedRouter := r.Group("")
 	protectedRouter.Use(middleware.JwtAuth(co.Config.JWT.AccessTokenSecret))
 	NewProtected(protectedRouter, co)
+	NewUser(protectedRouter, co)
+	NewTask(protectedRouter, co)
 }

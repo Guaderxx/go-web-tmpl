@@ -188,3 +188,19 @@ func (uc *User) DeleteByID(c *gin.Context) {
 		Data: "delete user succeed",
 	})
 }
+
+func (uc *User) UserTasks(c *gin.Context) {
+	uid := c.GetUint64("x-user-id")
+	tasks, err := uc.Usecase.UserTasks(c, uid)
+	if err != nil {
+		c.JSON(http.StatusOK, service.ErrorResponse{
+			Code:  500,
+			Error: err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, service.Response[ent.Tasks]{
+		Code: 200,
+		Data: tasks,
+	})
+}

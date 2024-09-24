@@ -33,8 +33,4 @@ func NewUserAccount(r *gin.RouterGroup, core *core.Core) {
 	r.POST("/signup", uc.Signup)
 	r.POST("/login", uc.Login)
 	r.POST("/refresh", uc.RefreshToken)
-
-	r.GET("/users", uc.Users)
-	r.PUT("/user", uc.UpdateUserName)
-	r.DELETE("/user", uc.DeleteByID)
 }
