@@ -14,4 +14,6 @@ type User interface {
 
 	UpdateName(c context.Context, id uint64, name string) (*ent.User, error)
 	DeleteByID(c context.Context, id uint64) error
+
+	UserTasks(c context.Context, id uint64) (ent.Tasks, error)
 }
