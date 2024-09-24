@@ -12,12 +12,6 @@ import (
 )
 
 type CustomClaims struct {
-	Name string `json:"name"`
-	ID   uint64 `json:"id"`
-	jwt.RegisteredClaims
-}
-
-type CustomRefreshClaims struct {
 	ID uint64 `json:"id"`
 	jwt.RegisteredClaims
 }
@@ -56,13 +50,11 @@ func JwtAuth(secret string) gin.HandlerFunc {
 	}
 }
 
-func CreateAccessToken(id uint64, name, secret string, expiry int) (string, error) {
-	exp := time.Now().Add(time.Hour * time.Duration(expiry)).Unix()
-	claims := &CustomClaims{
-		Name: name,
-		ID:   id,
+func CreateAccessToken(id uint64, secret string, expiry int) (string, error) {
+	claims := CustomClaims{
+		ID: id,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Unix(exp, 0)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expiry))),
 		},
 	}
 
@@ -75,7 +67,7 @@ func CreateAccessToken(id uint64, name, secret string, expiry int) (string, erro
 }
 
 func CreateRefreshToken(id uint64, secret string, expiry int) (string, error) {
-	claims := CustomRefreshClaims{
+	claims := CustomClaims{
 		ID: id,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expiry))),
@@ -104,7 +96,7 @@ func IsAuthorized(requestToken, secret string) (bool, error) {
 }
 
 func ExtractIDFromToken(refreshToken, secret string) (uint64, error) {
-	token, err := jwt.Parse(refreshToken, func(t *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, &CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
@@ -114,9 +106,9 @@ func ExtractIDFromToken(refreshToken, secret string) (uint64, error) {
 		return 0, err
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); !ok && !token.Valid {
+	if claims, ok := token.Claims.(*CustomClaims); !ok && !token.Valid {
 		return 0, fmt.Errorf("invalid token")
 	} else {
-		return claims["id"].(uint64), nil
+		return claims.ID, nil
 	}
 }
