@@ -4,8 +4,6 @@ Golang web template.
 
 A Go(Golang) Web Backend Template project with [gin][gin], [ent][ent], [jwt][jwt], [sonyflake][sonyflake], [cobra][cobra], [viper][viper].
 
-**You can easily use this template with tool like [gonew][gonew].**
-
 
 ## Architecture of the project
 
